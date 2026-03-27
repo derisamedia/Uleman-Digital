@@ -101,7 +101,7 @@ const ThemeElegant = ({ config, onRsvpSubmit, rsvps = [] }) => {
 
   return (
     <div className="landing-page">
-      <audio ref={audioRef} loop src={bgm} />
+      <audio ref={audioRef} loop src={config.music || bgm} />
 
       {showContent && (
         <button className={`music-toggle ${!isPlaying ? 'paused' : ''}`} onClick={toggleMusic}>

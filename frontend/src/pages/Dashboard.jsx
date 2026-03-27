@@ -125,7 +125,7 @@ function Dashboard() {
       localStorage.setItem('admin_logged_in', 'true');
       setShowUserMenu(false);
     } else {
-      alert('Invalid credentials. (Hint: admin / admin)');
+      alert('Invalid credentials.');
     }
   };
 
@@ -150,11 +150,11 @@ function Dashboard() {
           
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '8px' }}>Username (admin)</label>
+              <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '8px' }}>Username</label>
               <input required type="text" value={loginForm.user} onChange={e => setLoginForm({...loginForm, user: e.target.value})} style={{ width: '100%', padding: '12px 16px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'white' }} />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '8px' }}>Password (admin)</label>
+              <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '8px' }}>Password</label>
               <input required type="password" value={loginForm.pass} onChange={e => setLoginForm({...loginForm, pass: e.target.value})} style={{ width: '100%', padding: '12px 16px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'white' }} />
             </div>
             <button type="submit" style={{ background: '#3b82f6', color: 'white', padding: '14px', borderRadius: '12px', border: 'none', fontWeight: 600, marginTop: '8px', cursor: 'pointer', transition: 'all 0.3s' }}>
@@ -647,6 +647,19 @@ function Dashboard() {
                            <div style={{ marginBottom: '8px', fontSize: '0.8rem' }}><a href={config.bride_photo} target="_blank" rel="noreferrer" style={{color: '#3b82f6'}}>Lihat Gambar Saat Ini</a></div>
                         )}
                         <input type="file" accept="image/*" onChange={(e) => { if(e.target.files[0]) setConfig({...config, bride_photo: e.target.files[0]}) }} style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontFamily: 'inherit' }} />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ padding: '16px', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <h4 style={{ color: '#f8fafc', marginBottom: '12px', fontSize: '1rem', fontWeight: 600 }}>Musik Latar (Backsound)</h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '8px', color: '#94a3b8', fontSize: '0.9rem' }}>Upload File Audio (MP3/WAV)</label>
+                        {typeof config.music === 'string' && config.music && (
+                           <div style={{ marginBottom: '8px', fontSize: '0.8rem' }}><a href={config.music} target="_blank" rel="noreferrer" style={{color: '#3b82f6'}}>Dengarkan Musik Saat Ini</a></div>
+                        )}
+                        <input type="file" accept="audio/*" onChange={(e) => { if(e.target.files[0]) setConfig({...config, music: e.target.files[0]}) }} style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontFamily: 'inherit' }} />
                       </div>
                     </div>
                   </div>

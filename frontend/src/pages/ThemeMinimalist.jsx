@@ -97,7 +97,7 @@ const ThemeMinimalist = ({ config, onRsvpSubmit, rsvps = [] }) => {
 
   return (
     <div className="theme-minimalist">
-      <audio ref={audioRef} loop src={bgm} />
+      <audio ref={audioRef} loop src={config.music || bgm} />
 
       {showContent && (
         <button className={`min-music-toggle ${!isPlaying ? 'paused' : ''}`} onClick={toggleMusic}>
