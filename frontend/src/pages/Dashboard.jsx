@@ -87,6 +87,7 @@ function Dashboard() {
       });
       if (res.ok) {
         setConfig(prev => ({ ...prev, ...newConfig }));
+        await fetchConfig(); // Refresh from backend to grab actual file URLs instead of the File objects
         // Cross-tab communication to seamlessly update Live Preview tabs automatically
         if (newConfig.theme) {
            localStorage.setItem('uleman_theme', newConfig.theme);
@@ -657,9 +658,16 @@ function Dashboard() {
                       <div>
                         <label style={{ display: 'block', marginBottom: '8px', color: '#94a3b8', fontSize: '0.9rem' }}>Upload File Audio (MP3/WAV)</label>
                         {typeof config.music === 'string' && config.music && (
-                           <div style={{ marginBottom: '8px', fontSize: '0.8rem' }}><a href={config.music} target="_blank" rel="noreferrer" style={{color: '#3b82f6'}}>Dengarkan Musik Saat Ini</a></div>
+                           <div style={{ marginBottom: '8px', fontSize: '0.8rem', display: 'flex', gap: '12px', alignItems: 'center' }}>
+                             <a href={config.music} target="_blank" rel="noreferrer" style={{color: '#3b82f6'}}>Dengarkan Musik Saat Ini</a>
+                             <button type="button" onClick={() => { 
+                               saveConfig({...config, music: ''}); 
+                               const el = document.getElementById('music-upload'); 
+                               if (el) el.value = ''; 
+                             }} style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '4px 10px', borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s' }}>Reset ke Bawaan</button>
+                           </div>
                         )}
-                        <input type="file" accept="audio/*" onChange={(e) => { if(e.target.files[0]) setConfig({...config, music: e.target.files[0]}) }} style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontFamily: 'inherit' }} />
+                        <input id="music-upload" type="file" accept="audio/*" onChange={(e) => { if(e.target.files[0]) setConfig({...config, music: e.target.files[0]}) }} style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontFamily: 'inherit' }} />
                       </div>
                     </div>
                   </div>

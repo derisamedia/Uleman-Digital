@@ -57,7 +57,8 @@ const db = new sqlite3.Database(dbPath, (err) => {
       hero_bg TEXT,
       hero_photo TEXT,
       groom_parents TEXT,
-      bride_parents TEXT
+      bride_parents TEXT,
+      music TEXT
     )`, () => {
       // Ensure schema is fully healed from legacy or interrupted creations
       const requiredColumns = {
@@ -69,7 +70,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
         'groom_photo': 'TEXT', 'bride_photo': 'TEXT', 
         'akad_time': 'TEXT DEFAULT "08:00 WIB - Selesai"', 'resepsi_time': 'TEXT DEFAULT "11:00 WIB - Selesai"',
         'hero_bg': 'TEXT', 'hero_photo': 'TEXT',
-        'groom_parents': 'TEXT DEFAULT "Bpk. Suherman & Ibu Yanti"', 'bride_parents': 'TEXT DEFAULT "Bpk. Juhadi & Ibu Ningsih"'
+        'groom_parents': 'TEXT DEFAULT "Bpk. Suherman & Ibu Yanti"', 'bride_parents': 'TEXT DEFAULT "Bpk. Juhadi & Ibu Ningsih"', 'music': 'TEXT'
       };
       
       db.all("PRAGMA table_info(config)", (err, cols) => {
@@ -209,13 +210,22 @@ app.post('/api/config', upload.any(), (req, res) => {
       'resepsi_address', 'resepsi_maps', 'resepsi_time', 'bank_name', 'bank_account', 
       'gift_address', 'admin_username', 'admin_password', 'admin_name', 'admin_email',
       'hero_bg', 'hero_photo', 'groom_photo', 'bride_photo', // Could be updated via basic text URL if not uploaded
-      'groom_parents', 'bride_parents'
+      'groom_parents', 'bride_parents', 'music'
     ];
 
     allowedText.forEach(field => {
       if (req.body[field] !== undefined) {
         fields.push(`${field} = ?`);
         params.push(req.body[field]);
+
+        // Mark old file for deletion if it's being cleared/reset (e.g. music reset to "")
+        if (oldConfig && oldConfig[field] && oldConfig[field].includes('/uploads/') && req.body[field] !== oldConfig[field]) {
+          const oldRelativeName = oldConfig[field].split('/uploads/')[1];
+          if (oldRelativeName) {
+             const oldPath = path.join(uploadsDir, oldRelativeName);
+             if (!filesToDelete.includes(oldPath)) filesToDelete.push(oldPath);
+          }
+        }
       }
     });
 
