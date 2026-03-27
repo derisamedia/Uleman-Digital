@@ -8,7 +8,9 @@ Platform Undangan Pernikahan Digital yang modern, dinamis, dan mudah dikustomisa
 - **Pilihan Tema:** Tersedia beberapa tema yang bisa disesuaikan (Elegant, Minimalist, dll) dari *dashboard admin*.
 - **RSVP Digital:** Tamu dapat mengonfirmasi kehadiran serta mengirimkan ucapan secara langsung.
 - **Admin Dashboard:** Panel khusus untuk mengatur konfigurasi pernikahan (nama mempelai, tanggal acara, alamat akad/resepsi, hadiah/rekening) dan melihat daftar RSVP.
-- **Data Tersimpan Otomatis:** Semua perubahan dan ucapan tersimpan persisten ke dalam satu file database SQLite.
+- **Kustomisasi Media:** Upload foto pengantin (hero, mempelai pria, mempelai wanita) serta mengatur musik latar (backsound) kustom langsung dari dashboard.
+- **Manajemen Profil Admin:** Pembaruan username, password, dan detail akun langsung dari dashboard.
+- **Data Tersimpan Otomatis:** Semua perubahan dan ucapan tersimpan persisten ke dalam satu database SQLite.
 
 ---
 
