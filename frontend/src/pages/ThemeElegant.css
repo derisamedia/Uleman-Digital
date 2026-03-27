@@ -17,9 +17,7 @@
   min-height: 100vh;
   width: 100vw;
   overflow-x: hidden;
-  position: absolute;
-  top: 0;
-  left: 0;
+  position: relative;
   z-index: 100;
 }
 
@@ -95,6 +93,7 @@
 @media (max-width: 768px) {
   .couple-names {
     font-size: 12vw;
+    margin: 10px 0;
   }
 }
 
@@ -149,9 +148,7 @@
   color: var(--landing-gold);
   margin-bottom: 60px;
   position: relative;
-  display: inline-block;
-  left: 50%;
-  transform: translateX(-50%);
+  display: block;
 }
 
 .section-heading::after {
@@ -244,6 +241,38 @@
   to { opacity: 1; }
 }
 
+@keyframes photoBlob {
+  0% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; transform: translateY(0); }
+  50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; transform: translateY(-5px); }
+  100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .hero-circle {
+    width: 140px;
+    height: 140px;
+    margin-bottom: 15px;
+  }
+  .couple-names {
+    font-size: 11vw;
+    margin: 5px 0;
+  }
+  .save-the-date {
+    margin-bottom: 8px;
+  }
+  .date-divider {
+    height: 20px;
+    margin: 10px auto;
+  }
+  .hero-date {
+    margin-bottom: 5px;
+    font-size: 1rem;
+  }
+  .landing-title {
+    font-size: 2.5rem;
+  }
+}
+
 @keyframes scaleY {
   from { transform: scaleY(0); }
   to { transform: scaleY(1); }
@@ -314,10 +343,10 @@
 
 .music-toggle {
   position: fixed;
-  bottom: 30px;
-  right: 30px;
-  width: 50px;
-  height: 50px;
+  bottom: 90px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: var(--landing-glass);
   backdrop-filter: blur(10px);
@@ -332,6 +361,15 @@
   animation: pulseRotate 4s linear infinite;
 }
 
+@media (min-width: 768px) {
+  .music-toggle {
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+  }
+}
+
 @keyframes pulseRotate {
   0% { transform: scale(1) rotate(0deg); box-shadow: 0 0 0 0 rgba(197, 168, 128, 0.4); }
   50% { transform: scale(1.05) rotate(180deg); box-shadow: 0 0 0 10px rgba(197, 168, 128, 0); }
@@ -340,4 +378,214 @@
 
 .music-toggle.paused {
   animation: none;
+}
+
+/* Islamic & Content Styling for Traditional Structure */
+.content-section {
+  padding: 80px 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+.arabic-bismillah {
+  font-family: 'Amiri', 'Traditional Arabic', 'Arial', serif;
+  font-size: 2.8rem;
+  color: var(--landing-gold);
+  margin-bottom: 20px;
+  font-weight: normal;
+  line-height: 1.4;
+}
+
+.salam-text {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  font-style: italic;
+  color: var(--landing-gold-light);
+  margin-bottom: 30px;
+}
+
+.opening-p {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #ccc;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.couples-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+}
+
+@media (min-width: 768px) {
+  .couples-section {
+    flex-direction: row;
+    justify-content: center;
+    gap: 60px;
+  }
+}
+
+.couple-card {
+  text-align: center;
+  background: var(--landing-glass);
+  padding: 40px;
+  border-radius: 20px;
+  border: 1px solid var(--landing-border);
+  min-width: 250px;
+  flex: 1;
+}
+
+.couple-name-title {
+  font-family: 'Cinzel', serif;
+  font-size: 2rem;
+  color: var(--landing-gold);
+  margin-bottom: 10px;
+}
+
+.couple-parents {
+  font-size: 1rem;
+  color: #999;
+  line-height: 1.6;
+}
+
+.couple-divider {
+  font-family: 'Cinzel', serif;
+  font-size: 3rem;
+  color: var(--landing-gold-light);
+  opacity: 0.5;
+}
+
+.quote-section {
+  background: linear-gradient(to bottom, transparent, rgba(197, 168, 128, 0.05), transparent);
+}
+
+.quote-text {
+  font-size: 1.1rem;
+  font-style: italic;
+  line-height: 1.8;
+  color: var(--landing-text);
+  max-width: 600px;
+  margin: 0 auto 20px;
+}
+
+.quote-src {
+  font-size: 1rem;
+  font-weight: bold;
+  color: var(--landing-gold);
+}
+
+.countdown-section {
+  padding-bottom: 40px;
+}
+
+.countdown-grid {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.time-box {
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--landing-gold);
+  border-radius: 12px;
+  min-width: 80px;
+  padding: 20px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.time-num {
+  font-family: 'Cinzel', serif;
+  font-size: 2.5rem;
+  color: var(--landing-gold-light);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.time-text {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #aaa;
+}
+
+.hero-date {
+  font-style: italic; 
+  color: var(--landing-gold-light);
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+  letter-spacing: 2px;
+  animation: fadeIn 1.5s ease 1.5s forwards;
+  opacity: 0;
+}
+
+.hero-circle {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  border: 4px solid var(--landing-gold);
+  overflow: hidden;
+  margin-bottom: 30px;
+  animation: fadeUp 1s ease forwards;
+  box-shadow: 0 0 20px rgba(197, 168, 128, 0.3);
+}
+
+.hero-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.couple-photo {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--landing-gold-light);
+  margin-bottom: 20px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+}
+
+/* Modern Web3 / Premium Wedding Photo Animations */
+.hero-bg {
+  animation: bgKenBurns 20s linear infinite alternate !important;
+}
+
+@keyframes bgKenBurns {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.15); }
+}
+
+@media (max-width: 768px) {
+  .hero-circle {
+    width: 140px;
+    height: 140px;
+    margin-bottom: 15px;
+  }
+  .couple-names {
+    font-size: 11vw;
+    margin: 5px 0;
+  }
+  .save-the-date {
+    margin-bottom: 8px;
+  }
+  .date-divider {
+    height: 20px;
+    margin: 10px auto;
+  }
+  .hero-date {
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+  }
+  .landing-title {
+    font-size: 2.5rem;
+  }
 }

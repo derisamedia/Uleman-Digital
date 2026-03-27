@@ -11,6 +11,7 @@ function App() {
         to switch between the Template Dashboard and the Live Web Invitation!
         In production, the dashboard is hidden behind an admin login.
       */}
+      {/* 
       <div style={{
         position: 'fixed',
         bottom: '20px',
@@ -32,6 +33,7 @@ function App() {
           Dashboard
         </Link>
       </div>
+      */}
 
       <Routes>
         {/* The Digital Invitation accessible by guests */}

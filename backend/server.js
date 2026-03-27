@@ -2,13 +2,28 @@ const express = require('express');
 const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const multer = require('multer');
+const fs = require('fs');
 
 const app = express();
+
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir);
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadsDir),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, file.fieldname + '-' + Date.now() + ext);
+  }
+});
+const upload = multer({ storage });
 const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static(uploadsDir));
 
 // Initialize SQLite database
 const dbPath = path.resolve(__dirname, 'uleman_v3.db');
@@ -34,7 +49,15 @@ const db = new sqlite3.Database(dbPath, (err) => {
       admin_username TEXT,
       admin_password TEXT,
       admin_name TEXT,
-      admin_email TEXT
+      admin_email TEXT,
+      groom_photo TEXT,
+      bride_photo TEXT,
+      akad_time TEXT,
+      resepsi_time TEXT,
+      hero_bg TEXT,
+      hero_photo TEXT,
+      groom_parents TEXT,
+      bride_parents TEXT
     )`, () => {
       // Ensure schema is fully healed from legacy or interrupted creations
       const requiredColumns = {
@@ -42,7 +65,11 @@ const db = new sqlite3.Database(dbPath, (err) => {
         'resepsi_address': 'TEXT', 'resepsi_maps': 'TEXT',
         'bank_name': 'TEXT', 'bank_account': 'TEXT', 'gift_address': 'TEXT',
         'admin_username': 'TEXT DEFAULT "admin"', 'admin_password': 'TEXT DEFAULT "admin"',
-        'admin_name': 'TEXT DEFAULT "Administrator"', 'admin_email': 'TEXT DEFAULT "admin@uleman.com"'
+        'admin_name': 'TEXT DEFAULT "Administrator"', 'admin_email': 'TEXT DEFAULT "admin@uleman.com"',
+        'groom_photo': 'TEXT', 'bride_photo': 'TEXT', 
+        'akad_time': 'TEXT DEFAULT "08:00 WIB - Selesai"', 'resepsi_time': 'TEXT DEFAULT "11:00 WIB - Selesai"',
+        'hero_bg': 'TEXT', 'hero_photo': 'TEXT',
+        'groom_parents': 'TEXT DEFAULT "Bpk. Suherman & Ibu Yanti"', 'bride_parents': 'TEXT DEFAULT "Bpk. Juhadi & Ibu Ningsih"'
       };
       
       db.all("PRAGMA table_info(config)", (err, cols) => {
@@ -59,13 +86,15 @@ const db = new sqlite3.Database(dbPath, (err) => {
         // Seed default config if entirely empty
         db.get(`SELECT * FROM config WHERE id = 1`, (err, row) => {
           if (!row) {
-            db.run(`INSERT INTO config (id, couple_names, wedding_date, theme, akad_address, akad_maps, resepsi_address, resepsi_maps, bank_name, bank_account, gift_address, admin_username, admin_password, admin_name, admin_email) 
-                    VALUES (1, 'Romeo & Juliet', '2026-12-12', 'elegant', 
-                    'Masjid Raya Al-Jabar\\nJl. Cimincrang No.14\\nKota Bandung', 'https://maps.app.goo.gl/some-link', 
-                    'The Trans Luxury Hotel\\nJl. Gatot Subroto No.289\\nKota Bandung', 'https://maps.app.goo.gl/some-link', 
-                    'BCA - Romeo', '1234567890',
+            db.run(`INSERT INTO config (id, couple_names, wedding_date, theme, akad_address, akad_maps, akad_time, resepsi_address, resepsi_maps, resepsi_time, bank_name, bank_account, gift_address, groom_photo, bride_photo, hero_bg, hero_photo, admin_username, admin_password, admin_name, admin_email, groom_parents, bride_parents) 
+                    VALUES (1, 'Aris & Sri', '2026-12-12', 'elegant', 
+                    'Masjid Raya Al-Jabar\\nJl. Cimincrang No.14\\nKota Bandung', 'https://maps.app.goo.gl/some-link', '08:00 WIB - Selesai',
+                    'The Trans Luxury Hotel\\nJl. Gatot Subroto No.289\\nKota Bandung', 'https://maps.app.goo.gl/some-link', '11:00 WIB - Selesai',
+                    'BCA - Aris', '1234567890',
                     'Jl. Ir. H. Juanda No. 123\\nKel. Dago, Kec. Coblong\\nBandung',
-                    'admin', 'admin', 'Administrator', 'admin@uleman.com')`);
+                    'https://images.unsplash.com/photo-1542652735873-fb2825bac6e2?w=400', 'https://images.unsplash.com/photo-1510342417-640f1a9a83eb?w=400',
+                    'https://images.unsplash.com/photo-1511285560929-80b456fea0bc', 'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=600',
+                    'admin', 'admin', 'Administrator', 'admin@uleman.com', 'Bpk. Suherman & Ibu Yanti', 'Bpk. Juhadi & Ibu Ningsih')`);
           }
         });
       });
@@ -165,39 +194,75 @@ app.get('/api/config', (req, res) => {
   });
 });
 
-app.post('/api/config', (req, res) => {
-  const { couple_names, wedding_date, theme, akad_address, akad_maps, resepsi_address, resepsi_maps, bank_name, bank_account, gift_address, admin_username, admin_password, admin_name, admin_email } = req.body;
+app.post('/api/config', upload.any(), (req, res) => {
+  db.get(`SELECT * FROM config WHERE id = 1`, (err, oldConfig) => {
+    if (err) return res.status(500).json({ error: err.message });
+    
+    let query = `UPDATE config SET `;
+    const params = [];
+    const fields = [];
+    const filesToDelete = [];
 
-  // Update configuration logic
-  let query = `UPDATE config SET `;
-  const params = [];
-  const fields = [];
+    // Base text fields sent in req.body
+    const allowedText = [
+      'couple_names', 'wedding_date', 'theme', 'akad_address', 'akad_maps', 'akad_time', 
+      'resepsi_address', 'resepsi_maps', 'resepsi_time', 'bank_name', 'bank_account', 
+      'gift_address', 'admin_username', 'admin_password', 'admin_name', 'admin_email',
+      'hero_bg', 'hero_photo', 'groom_photo', 'bride_photo', // Could be updated via basic text URL if not uploaded
+      'groom_parents', 'bride_parents'
+    ];
 
-  if (couple_names !== undefined) { fields.push(`couple_names = ?`); params.push(couple_names); }
-  if (wedding_date !== undefined) { fields.push(`wedding_date = ?`); params.push(wedding_date); }
-  if (theme !== undefined) { fields.push(`theme = ?`); params.push(theme); }
-  if (akad_address !== undefined) { fields.push(`akad_address = ?`); params.push(akad_address); }
-  if (akad_maps !== undefined) { fields.push(`akad_maps = ?`); params.push(akad_maps); }
-  if (resepsi_address !== undefined) { fields.push(`resepsi_address = ?`); params.push(resepsi_address); }
-  if (resepsi_maps !== undefined) { fields.push(`resepsi_maps = ?`); params.push(resepsi_maps); }
-  if (bank_name !== undefined) { fields.push(`bank_name = ?`); params.push(bank_name); }
-  if (bank_account !== undefined) { fields.push(`bank_account = ?`); params.push(bank_account); }
-  if (gift_address !== undefined) { fields.push(`gift_address = ?`); params.push(gift_address); }
-  if (admin_username !== undefined) { fields.push(`admin_username = ?`); params.push(admin_username); }
-  if (admin_password !== undefined) { fields.push(`admin_password = ?`); params.push(admin_password); }
-  if (admin_name !== undefined) { fields.push(`admin_name = ?`); params.push(admin_name); }
-  if (admin_email !== undefined) { fields.push(`admin_email = ?`); params.push(admin_email); }
-  if (fields.length === 0) {
-    return res.status(400).json({ error: "No fields provided to update" });
-  }
+    allowedText.forEach(field => {
+      if (req.body[field] !== undefined) {
+        fields.push(`${field} = ?`);
+        params.push(req.body[field]);
+      }
+    });
 
-  query += fields.join(', ') + ` WHERE id = 1`;
+    // Check newly uploaded files
+    if (req.files && req.files.length > 0) {
+      req.files.forEach(file => {
+        const fieldName = file.fieldname;
+        const newUrl = `http://localhost:${PORT}/uploads/${file.filename}`;
+        
+        // Remove existing text update if overridden by file upload
+        const fieldIndex = fields.findIndex(f => f === `${fieldName} = ?`);
+        if (fieldIndex > -1) {
+          params[fieldIndex] = newUrl;
+        } else {
+          fields.push(`${fieldName} = ?`);
+          params.push(newUrl);
+        }
 
-  db.run(query, params, function (err) {
-    if (err) {
-      return res.status(500).json({ error: err.message });
+        // Mark old file for deletion cleanly avoiding default seeded URLs or Unsplash URLs
+        if (oldConfig && oldConfig[fieldName] && oldConfig[fieldName].includes('/uploads/')) {
+          const oldRelativeName = oldConfig[fieldName].split('/uploads/')[1];
+          if (oldRelativeName) {
+             const oldPath = path.join(uploadsDir, oldRelativeName);
+             filesToDelete.push(oldPath);
+          }
+        }
+      });
     }
-    res.json({ message: "Configuration updated successfully!" });
+
+    if (fields.length === 0) {
+      return res.status(400).json({ error: "No fields provided to update" });
+    }
+
+    query += fields.join(', ') + ` WHERE id = 1`;
+
+    db.run(query, params, function (err) {
+      if (err) return res.status(500).json({ error: err.message });
+      
+      // Cleanup locally stored old images
+      filesToDelete.forEach(fPath => {
+        if (fs.existsSync(fPath)) {
+          fs.unlink(fPath, (err) => { if(err) console.error("Failed to delete", fPath) });
+        }
+      });
+
+      res.json({ message: "Configuration updated successfully!" });
+    });
   });
 });
 

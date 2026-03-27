@@ -74,10 +74,16 @@ function Dashboard() {
   const saveConfig = async (newConfig) => {
     setIsSaving(true);
     try {
+      const formData = new FormData();
+      Object.keys(newConfig).forEach(key => {
+        if (newConfig[key] !== null && newConfig[key] !== undefined) {
+          formData.append(key, newConfig[key]);
+        }
+      });
+
       const res = await fetch(`${API_URL}/config`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newConfig)
+        body: formData
       });
       if (res.ok) {
         setConfig(prev => ({ ...prev, ...newConfig }));
@@ -600,6 +606,54 @@ function Dashboard() {
                 </div>
               </div>
 
+              {/* Media & Photos */}
+              <div style={{ background: 'rgba(255,255,255,0.03)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <h3 style={{ marginBottom: '16px', fontWeight: 500, color: '#f8fafc' }}>Media & Foto (URL)</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  
+                  <div style={{ padding: '16px', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <h4 style={{ color: '#f8fafc', marginBottom: '12px', fontSize: '1rem', fontWeight: 600 }}>Halaman Sampul (Hero)</h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '8px', color: '#94a3b8', fontSize: '0.9rem' }}>Upload Background Image</label>
+                        {typeof config.hero_bg === 'string' && config.hero_bg && (
+                           <div style={{ marginBottom: '8px', fontSize: '0.8rem' }}><a href={config.hero_bg} target="_blank" rel="noreferrer" style={{color: '#3b82f6'}}>Lihat Gambar Saat Ini</a></div>
+                        )}
+                        <input type="file" accept="image/*" onChange={(e) => { if(e.target.files[0]) setConfig({...config, hero_bg: e.target.files[0]}) }} style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontFamily: 'inherit' }} />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '8px', color: '#94a3b8', fontSize: '0.9rem' }}>Upload Foto Lingkaran Sampul</label>
+                        {typeof config.hero_photo === 'string' && config.hero_photo && (
+                           <div style={{ marginBottom: '8px', fontSize: '0.8rem' }}><a href={config.hero_photo} target="_blank" rel="noreferrer" style={{color: '#3b82f6'}}>Lihat Gambar Saat Ini</a></div>
+                        )}
+                        <input type="file" accept="image/*" onChange={(e) => { if(e.target.files[0]) setConfig({...config, hero_photo: e.target.files[0]}) }} style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontFamily: 'inherit' }} />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ padding: '16px', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <h4 style={{ color: '#f8fafc', marginBottom: '12px', fontSize: '1rem', fontWeight: 600 }}>Foto Mempelai</h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '8px', color: '#94a3b8', fontSize: '0.9rem' }}>Upload Foto Mempelai Pria</label>
+                        {typeof config.groom_photo === 'string' && config.groom_photo && (
+                           <div style={{ marginBottom: '8px', fontSize: '0.8rem' }}><a href={config.groom_photo} target="_blank" rel="noreferrer" style={{color: '#3b82f6'}}>Lihat Gambar Saat Ini</a></div>
+                        )}
+                        <input type="file" accept="image/*" onChange={(e) => { if(e.target.files[0]) setConfig({...config, groom_photo: e.target.files[0]}) }} style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontFamily: 'inherit' }} />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '8px', color: '#94a3b8', fontSize: '0.9rem' }}>Upload Foto Mempelai Wanita</label>
+                        {typeof config.bride_photo === 'string' && config.bride_photo && (
+                           <div style={{ marginBottom: '8px', fontSize: '0.8rem' }}><a href={config.bride_photo} target="_blank" rel="noreferrer" style={{color: '#3b82f6'}}>Lihat Gambar Saat Ini</a></div>
+                        )}
+                        <input type="file" accept="image/*" onChange={(e) => { if(e.target.files[0]) setConfig({...config, bride_photo: e.target.files[0]}) }} style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontFamily: 'inherit' }} />
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
               <div style={{ background: 'rgba(255,255,255,0.03)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <h3 style={{ marginBottom: '16px', fontWeight: 500, color: '#f8fafc' }}>Informasi Acara</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -611,8 +665,34 @@ function Dashboard() {
                         <input type="text" value={config.couple_names || ''} onChange={(e) => setConfig({...config, couple_names: e.target.value})} style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontFamily: 'inherit' }} />
                       </div>
                       <div>
-                        <label style={{ display: 'block', marginBottom: '8px', color: '#94a3b8', fontSize: '0.9rem' }}>Tanggal Pernikahan</label>
+                        <label style={{ display: 'block', marginBottom: '8px', color: '#94a3b8', fontSize: '0.9rem' }}>Nama Orang Tua Mempelai Pria</label>
+                        <input type="text" placeholder="Bpk. ... & Ibu ..." value={config.groom_parents || ''} onChange={(e) => setConfig({...config, groom_parents: e.target.value})} style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontFamily: 'inherit' }} />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '8px', color: '#94a3b8', fontSize: '0.9rem' }}>Nama Orang Tua Mempelai Wanita</label>
+                        <input type="text" placeholder="Bpk. ... & Ibu ..." value={config.bride_parents || ''} onChange={(e) => setConfig({...config, bride_parents: e.target.value})} style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontFamily: 'inherit' }} />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '8px', color: '#94a3b8', fontSize: '0.9rem' }}>
+                          Tanggal Pernikahan <span style={{ fontSize: '0.8rem', opacity: 0.7 }}>(Bulan/Hari/Tahun)</span>
+                        </label>
                         <input type="date" value={config.wedding_date || ''} onChange={(e) => setConfig({...config, wedding_date: e.target.value})} style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontFamily: 'inherit' }} />
+                        {config.wedding_date && (
+                          <div style={{ marginTop: '8px', fontSize: '0.85rem', color: '#10b981' }}>
+                            ✓ Terbaca: {
+                                (() => {
+                                  const parts = config.wedding_date.split('-');
+                                  if (parts.length === 3) {
+                                    const y = parseInt(parts[0], 10);
+                                    const m = parseInt(parts[1], 10) - 1;
+                                    const d = parseInt(parts[2], 10);
+                                    return new Date(y, m, d).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                                  }
+                                  return config.wedding_date;
+                                })()
+                            }
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -621,6 +701,10 @@ function Dashboard() {
                   <div style={{ padding: '16px', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
                     <h4 style={{ color: '#f8fafc', marginBottom: '12px', fontSize: '1rem', fontWeight: 600 }}>Alamat Akad Nikah</h4>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '8px', color: '#94a3b8', fontSize: '0.9rem' }}>Waktu Pelaksanaan</label>
+                        <input type="text" placeholder="Contoh: 08:00 WIB - Selesai" value={config.akad_time || ''} onChange={(e) => setConfig({...config, akad_time: e.target.value})} style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontFamily: 'inherit' }} />
+                      </div>
                       <div>
                         <label style={{ display: 'block', marginBottom: '8px', color: '#94a3b8', fontSize: '0.9rem' }}>Detail Alamat</label>
                         <textarea rows="3" value={config.akad_address || ''} onChange={(e) => setConfig({...config, akad_address: e.target.value})} style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontFamily: 'inherit' }}></textarea>
@@ -636,6 +720,10 @@ function Dashboard() {
                   <div style={{ padding: '16px', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
                     <h4 style={{ color: '#f8fafc', marginBottom: '12px', fontSize: '1rem', fontWeight: 600 }}>Resepsi Pernikahan</h4>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '8px', color: '#94a3b8', fontSize: '0.9rem' }}>Waktu Pelaksanaan</label>
+                        <input type="text" placeholder="Contoh: 11:00 WIB - Selesai" value={config.resepsi_time || ''} onChange={(e) => setConfig({...config, resepsi_time: e.target.value})} style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontFamily: 'inherit' }} />
+                      </div>
                       <div>
                         <label style={{ display: 'block', marginBottom: '8px', color: '#94a3b8', fontSize: '0.9rem' }}>Detail Alamat</label>
                         <textarea rows="3" value={config.resepsi_address || ''} onChange={(e) => setConfig({...config, resepsi_address: e.target.value})} style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontFamily: 'inherit' }}></textarea>
