@@ -8,7 +8,7 @@
   </p>
 </div>
 
-Proyek ini dilengkapi dengan halaman undangan (landing page) interaktif untuk tamu dan <b>dashboard admin</b> fungsional untuk mengelola informasi acara, musik latar (backsound), foto galeri, serta data RSVP secara seketika (<i>real-time</i>).
+Proyek ini adalah repositori bagian **Frontend** yang dilengkapi dengan halaman undangan (landing page) interaktif untuk tamu, animasi *smooth scrolling*, dan **dashboard admin** fungsional untuk mengelola informasi acara, musik latar (backsound), foto galeri, serta data RSVP secara *real-time*.
 
 ## 🚀 Fitur Utama
 
@@ -16,90 +16,87 @@ Proyek ini dilengkapi dengan halaman undangan (landing page) interaktif untuk ta
 - **Pilihan Tema:** Tersedia beberapa tema yang bisa disesuaikan (Elegant, Minimalist, dll) dari *dashboard admin*.
 - **RSVP Digital:** Tamu dapat mengonfirmasi kehadiran serta mengirimkan ucapan secara langsung.
 - **Admin Dashboard:** Panel khusus untuk mengatur konfigurasi pernikahan (nama mempelai, tanggal acara, alamat akad/resepsi, hadiah/rekening) dan melihat daftar RSVP.
-- **Kustomisasi Media:** Upload foto pengantin (hero, mempelai pria, mempelai wanita) serta mengatur musik latar (backsound) kustom langsung dari dashboard.
-- **Manajemen Profil Admin:** Pembaruan username, password, dan detail akun langsung dari dashboard.
-- **Data Tersimpan Otomatis:** Semua perubahan dan ucapan tersimpan persisten ke dalam satu database SQLite.
+- **Kustomisasi Media:** Upload foto pengantin, mengatur musik latar (backsound) kustom langsung dari dashboard.
 
 ---
 
-## 💻 Tech Stack (Teknologi yang Digunakan)
+## 💻 Tech Stack (Teknologi Frontend)
 
-Proyek ini dipisahkan menjadi beberapa *services* dalam satu *repository* ini (Monorepo).
-
-### Backend (`/backend`)
-Menjalankan REST API dan mengelola penyimpanan data.
-- **Node.js** & **Express.js** untuk web server.
-- **SQLite3** untuk database relasional (file base, mudah dikelola).
-- **CORS** untuk menangani lintas domain.
-
-### Frontend (`/frontend`)
-Aplikasi web *client-side* (SPA) untuk tampilan undangan dan dashboard.
-- **React.js** dengan Vite sebagai bundler (kecepatan *build* tinggi).
+Aplikasi web *client-side* (SPA) untuk tampilan undangan dan dashboard dibangun menggunakan:
+- **React.js** dengan **Vite** sebagai *bundler* (kecepatan *build* tinggi).
 - **React Router** untuk navigasi halaman (*routing*).
 - **Lucide React** untuk ikon.
-- **Recharts** untuk visualisasi data jika ada (di dashboard).
 - Vanilla CSS untuk styling fleksibel dan animasi yang *smooth* (dikombinasikan dengan *Lenis*).
-
-*(Terdapat juga direktori `/uleman-next` yang merupakan versi alternatif atau pengembangan lanjutan menggunakan framework **Next.js**).*
-
----
-
-## 📂 Struktur Direktori
-
-```text
-📁 uleman-deri-new/
-├── 📁 backend/       # Kode REST API Express dan Database SQLite
-│   ├── package.json
-│   ├── server.js     # Entry point server backend
-│   └── uleman_v3.db  # Database otomatis terbuat saat pertama kali jalan
-├── 📁 frontend/      # Aplikasi React (Vite) untuk UI (Admin & Undangan)
-│   ├── package.json
-│   ├── src/          # Source code React (komponen, pages, styles)
-│   └── public/
-└── 📁 uleman-next/   # (Opsional) Versi framework Next.js dari platform ini
-```
+- **CORS Proxy (Vercel Rewrites)** untuk mengatasi masalah lintas domain.
 
 ---
 
-## 🛠️ Cara Menjalankan Aplikasi di Komputer Lokal
+## 🛠️ Cara Menjalankan di Komputer Lokal
 
-Pastikan Anda sudah menginstal [Node.js](https://nodejs.org/) di komputer Anda.
+Pastikan Anda sudah menginstal [Node.js](https://nodejs.org/) dan telah menjalankan *backend* API dari repositori **Uleman Digital Backend** di komputer Anda.
 
-### 1. Menjalankan Backend API
+1. Hubungkan ke Backend Lokal:
+   Buka file `vite.config.js` dan pastikan konfigurasi `target` *proxy* mengarah ke port backend Anda (misal: `http://localhost:5000`).
+   File `.env` cukup berisi: `VITE_API_URL=/api`
 
-Buka terminal baru, masuk ke folder `backend`:
-
-```bash
-cd backend
-npm install
-npm start
-# Atau bisa langsung dengan perintah: node server.js
-```
-*Server REST API akan berjalan di http://localhost:5000*
-
-### 2. Menjalankan Frontend (UI)
-
-Buka terminal *lainnya*, masuk ke folder `frontend`:
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-*Vite akan memberikan URL untuk diakses melalui browser Anda (biasanya http://localhost:5173).*
+2. Instalasi modul dan jalankan:
+   ```bash
+   npm install
+   npm run dev
+   ```
+3. Akses aplikasi melalui browser di `http://localhost:5173`.
 
 ---
 
-## 🌟 Mulai Menggunakan Admin Dashboard
+## ☁️ Panduan Publikasi / Deploy ke Hosting Gratis
 
-Secara default *Credentials* saat pertama install:
+Arsitektur aplikasi ini menggunakan **Vercel** untuk Frontend dan **Railway** (atau platform Node.js sejenis) untuk Backend.
+
+### Langkah 1: Deploy Backend (Railway / Hosting Node.js)
+1. Buat project baru di [Railway](https://railway.app/).
+2. Hubungkan ke repositori **Uleman Digital Backend** Anda.
+3. Tambahkan **Volume** berjenis Persistent Storage yang di-mount ke path `/app/uploads` dan berikan database path *environment variable* agar data SQLite dan foto tidak hilang saat Railway *restart*.
+4. Dapatkan domain publik backend Anda (Misal: `https://uleman-backend-production.up.railway.app`).
+
+### Langkah 2: Konfigurasi Frontend untuk Produksi
+Sebelum deploy Frontend, Anda harus menautkan frontend ini ke domain Backend production Anda. Buka codebase frontend dan edit dua file ini:
+
+**1. Edit file `vercel.json`**
+Ubah bagian `destination` URL dengan alamat backend Railway Anda:
+```json
+{
+  "source": "/api/(.*)",
+  "destination": "https://ALAMAT_RAILWAY_ANDA/api/$1"
+},
+{
+  "source": "/uploads/(.*)",
+  "destination": "https://ALAMAT_RAILWAY_ANDA/uploads/$1"
+}
+```
+
+**2. (Opsional) Edit `vite.config.js`**
+Jika Anda ingin mengetes frontend ini terkoneksi ke backend live sembari _development_ lokal, ubah isian `target` dari `localhost` menjadi alamat `https://ALAMAT_RAILWAY_ANDA`.
+
+### Langkah 3: Deploy Frontend ke Vercel
+1. Buat project baru di [Vercel](https://vercel.com/).
+2. Impor / sambungkan ke repositori GitHub **Uleman Digital** (Frontend) ini.
+3. Masuk ke opsi **Environment Variables**, dan tambahkan:
+   - **Key:** `VITE_API_URL`
+   - **Value:** `/api`
+   *(Catatan: Isian bernilai `/api` ini memicu Vercel Rewrites, sebuah arsitektur server proxy sehingga aplikasi terhindar dari error CORS secara otomatis).*
+4. Klik **Deploy** dan tunggu proses instalasi selesai.
+5. Selesai! Undangan digital Anda kini live.
+
+---
+
+## 🌟 Mengakses Admin Dashboard
+Jika Anda menguji *deployment* atau menjalankan pertama kali dan database dalam keadaan kosong, kredensial bawaan (*default*) adalah:
 - **Username:** admin
 - **Password:** admin
 
-Setelah berhasil *login* ke dashboard admin, Anda dapat langsung mengedit informasi acara dan melihat previewnya di halaman utama undangan.
+Setelah berhasil *login* ke dashboard admin via `/dashboard`, **segera ubah kredensial Anda** demi keamanan, lalu Anda dapat langsung mengedit semua informasi acara atau mengganti foto.
 
 ---
 
 ## 📜 Lisensi
-
-Proyek ini bersifat *Open-Source* atau penggunaannya mengikuti kebijakan lisensi pribadi. Silakan *fork* repositori ini untuk kustomisasi lebih lanjut.
+Proyek ini bersifat *Open-Source*. Silakan *fork* repositori ini untuk kustomisasi lebih lanjut proyek pernikahan Anda.
