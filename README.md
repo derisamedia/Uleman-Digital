@@ -1,6 +1,14 @@
-# Uleman Digital
+<div align="center">
+  <img src="./logo.png" alt="Uleman Digital Logo" width="250" />
+  
+  <h1>Uleman Digital</h1>
+  
+  <p>
+    <strong>Platform Undangan Pernikahan Digital yang modern, dinamis, dan mudah dikustomisasi.</strong>
+  </p>
+</div>
 
-Platform Undangan Pernikahan Digital yang modern, dinamis, dan mudah dikustomisasi. Proyek ini dilengkapi dengan halaman undangan (landing page) untuk tamu dan *dashboard admin* untuk mengelola informasi acara serta data RSVP.
+Proyek ini dilengkapi dengan halaman undangan (landing page) interaktif untuk tamu dan <b>dashboard admin</b> fungsional untuk mengelola informasi acara, musik latar (backsound), foto galeri, serta data RSVP secara seketika (<i>real-time</i>).
 
 ## 🚀 Fitur Utama
 

@@ -78,6 +78,11 @@ const LandingPage = () => {
     };
   }, [config?.theme]); // adding dependency optionally to ensure no stale closure, though it shouldn't matter here
 
+  useEffect(() => {
+    if (config?.couple_names) {
+      document.title = config.couple_names;
+    }
+  }, [config?.couple_names]);
 
   const handleRsvpSubmit = async (rsvpData) => {
     try {

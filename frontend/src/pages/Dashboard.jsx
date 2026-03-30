@@ -71,6 +71,14 @@ function Dashboard() {
     }
   };
 
+  useEffect(() => {
+    if (config?.couple_names && isLoggedIn) {
+      document.title = config.couple_names + " - Dashboard Admin";
+    } else {
+      document.title = "Uleman Digital - Dashboard Admin";
+    }
+  }, [config?.couple_names, isLoggedIn]);
+
   const saveConfig = async (newConfig) => {
     setIsSaving(true);
     try {
