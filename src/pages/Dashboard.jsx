@@ -106,8 +106,14 @@ function Dashboard() {
         // Show Success Toast
         setToast({ show: true, message: 'Berhasil! Data telah diperbarui dan di-sinkronisasi ke backend.' });
         setTimeout(() => setToast({ show: false, message: '' }), 4000);
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        setToast({ show: true, message: `Gagal menyimpan konfigurasi: ${errorData.error || 'Server error atau ukuran file terlalu besar (Max 4.5MB dari Vercel).'}` });
+        setTimeout(() => setToast({ show: false, message: '' }), 6000);
       }
     } catch (err) {
+      setToast({ show: true, message: `Terjadi kesalahan jaringan atau proxy Vercel: ${err.message}` });
+      setTimeout(() => setToast({ show: false, message: '' }), 6000);
       console.error('Error saving config', err);
     } finally {
       setIsSaving(false);
@@ -858,13 +864,13 @@ function Dashboard() {
       {toast.show && (
         <div style={{
           position: 'fixed', bottom: '30px', right: '30px', 
-          background: 'rgba(16, 185, 129, 0.9)', backdropFilter: 'blur(10px)',
+          background: toast.message.includes('Gagal') || toast.message.includes('Terjadi') ? 'rgba(239, 68, 68, 0.9)' : 'rgba(16, 185, 129, 0.9)', backdropFilter: 'blur(10px)',
           color: 'white', padding: '16px 24px', borderRadius: '12px',
           boxShadow: '0 10px 30px rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', gap: '12px',
           animation: 'fadeInUp 0.4s ease forwards', zIndex: 1000,
           border: '1px solid rgba(255,255,255,0.2)'
         }}>
-          <CheckCircle size={20} />
+          {toast.message.includes('Gagal') || toast.message.includes('Terjadi') ? <XCircle size={20} /> : <CheckCircle size={20} />}
           <span style={{ fontWeight: 500, fontSize: '0.95rem' }}>{toast.message}</span>
         </div>
       )}
