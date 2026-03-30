@@ -10,6 +10,11 @@ export default defineConfig({
         target: 'https://uleman-digital-backend-production.up.railway.app',
         changeOrigin: true,
         secure: false,
+      },
+      '/uploads': {
+        target: 'https://uleman-digital-backend-production.up.railway.app',
+        changeOrigin: true,
+        secure: false,
       }
     }
   }
