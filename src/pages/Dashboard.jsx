@@ -12,7 +12,10 @@ import {
   XCircle,
   HelpCircle,
   TrendingUp,
-  MailWarning
+  MailWarning,
+  Download,
+  Trash2,
+  AlertTriangle
 } from 'lucide-react';
 import { 
   PieChart, 
@@ -44,6 +47,9 @@ function Dashboard() {
   
   // Toast Notification State
   const [toast, setToast] = useState({ show: false, message: '' });
+
+  // Confirm Dialog State
+  const [confirmDialog, setConfirmDialog] = useState({ show: false, type: null, id: null, name: '' });
 
   // Fetch initial data
   useEffect(() => {
@@ -118,6 +124,77 @@ function Dashboard() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  // --- Delete single RSVP ---
+  const deleteRsvp = async (id) => {
+    try {
+      const res = await fetch(`${API_URL}/rsvps/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setRsvps(prev => prev.filter(r => r.id !== id));
+        setToast({ show: true, message: 'Data RSVP berhasil dihapus.' });
+        setTimeout(() => setToast({ show: false, message: '' }), 3000);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setToast({ show: true, message: `Gagal menghapus: ${err.error || 'Server error'}` });
+        setTimeout(() => setToast({ show: false, message: '' }), 4000);
+      }
+    } catch (err) {
+      setToast({ show: true, message: `Gagal menghapus: ${err.message}` });
+      setTimeout(() => setToast({ show: false, message: '' }), 4000);
+    }
+    setConfirmDialog({ show: false, type: null, id: null, name: '' });
+  };
+
+  // --- Delete ALL RSVPs ---
+  const deleteAllRsvps = async () => {
+    try {
+      const res = await fetch(`${API_URL}/rsvps`, { method: 'DELETE' });
+      if (res.ok) {
+        setRsvps([]);
+        setToast({ show: true, message: 'Semua data RSVP berhasil dihapus.' });
+        setTimeout(() => setToast({ show: false, message: '' }), 3000);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setToast({ show: true, message: `Gagal menghapus semua: ${err.error || 'Server error'}` });
+        setTimeout(() => setToast({ show: false, message: '' }), 4000);
+      }
+    } catch (err) {
+      setToast({ show: true, message: `Gagal menghapus: ${err.message}` });
+      setTimeout(() => setToast({ show: false, message: '' }), 4000);
+    }
+    setConfirmDialog({ show: false, type: null, id: null, name: '' });
+  };
+
+  // --- Export to CSV ---
+  const exportToCSV = () => {
+    if (rsvps.length === 0) {
+      setToast({ show: true, message: 'Tidak ada data untuk diekspor.' });
+      setTimeout(() => setToast({ show: false, message: '' }), 3000);
+      return;
+    }
+    const headers = ['No', 'Nama', 'Status Kehadiran', 'Jumlah Tamu', 'Pesan / Doa', 'Tanggal Submit'];
+    const rows = rsvps.map((r, i) => [
+      i + 1,
+      `"${(r.name || '').replace(/"/g, '""')}"`,
+      r.status === 'yes' ? 'Hadir' : r.status === 'no' ? 'Tidak Hadir' : 'Mungkin',
+      r.guests,
+      `"${(r.message || '').replace(/"/g, '""')}"`,
+      `"${new Date(r.created_at).toLocaleString('id-ID')}"`
+    ]);
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const coupleName = (config.couple_names || 'RSVP').replace(/[^a-z0-9]/gi, '_');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `RSVP_${coupleName}_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    setToast({ show: true, message: `Berhasil mengekspor ${rsvps.length} data RSVP ke CSV.` });
+    setTimeout(() => setToast({ show: false, message: '' }), 3000);
   };
 
   // Dynamic Statistics
@@ -495,20 +572,70 @@ function Dashboard() {
           <div className="card" style={{ animation: 'fadeInUp 0.5s ease' }}>
             <div className="card-header">
               <div className="card-title">
-                <Users size={20} className="text-accent-primary" /> Full Guest List Data
+                <Users size={20} className="text-accent-primary" /> Daftar Tamu RSVP
+              </div>
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                <button
+                  onClick={exportToCSV}
+                  title="Export data ke CSV"
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                    background: 'rgba(16,185,129,0.15)', color: '#10b981',
+                    border: '1px solid rgba(16,185,129,0.3)', padding: '8px 16px',
+                    borderRadius: '10px', cursor: 'pointer', fontSize: '0.85rem',
+                    fontWeight: 600, transition: 'all 0.2s'
+                  }}
+                  onMouseOver={e => e.currentTarget.style.background = 'rgba(16,185,129,0.25)'}
+                  onMouseOut={e => e.currentTarget.style.background = 'rgba(16,185,129,0.15)'}
+                >
+                  <Download size={16} /> Export CSV
+                </button>
+                <button
+                  onClick={() => rsvps.length > 0 && setConfirmDialog({ show: true, type: 'all', id: null, name: '' })}
+                  title="Hapus semua data RSVP"
+                  disabled={rsvps.length === 0}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                    background: rsvps.length === 0 ? 'rgba(100,100,100,0.1)' : 'rgba(239,68,68,0.15)',
+                    color: rsvps.length === 0 ? '#64748b' : '#ef4444',
+                    border: `1px solid ${rsvps.length === 0 ? 'rgba(100,100,100,0.2)' : 'rgba(239,68,68,0.3)'}`,
+                    padding: '8px 16px', borderRadius: '10px',
+                    cursor: rsvps.length === 0 ? 'not-allowed' : 'pointer',
+                    fontSize: '0.85rem', fontWeight: 600, transition: 'all 0.2s'
+                  }}
+                  onMouseOver={e => rsvps.length > 0 && (e.currentTarget.style.background = 'rgba(239,68,68,0.25)')}
+                  onMouseOut={e => rsvps.length > 0 && (e.currentTarget.style.background = 'rgba(239,68,68,0.15)')}
+                >
+                  <Trash2 size={16} /> Hapus Semua
+                </button>
               </div>
             </div>
+
+            {/* Summary bar */}
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '16px', marginBottom: '4px' }}>
+              <span style={{ background: 'rgba(59,130,246,0.1)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600 }}>
+                Total: {rsvps.length} form
+              </span>
+              <span style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981', border: '1px solid rgba(16,185,129,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600 }}>
+                Hadir: {rsvps.filter(r => r.status === 'yes').length} ({rsvps.filter(r => r.status === 'yes').reduce((a, c) => a + c.guests, 0)} tamu)
+              </span>
+              <span style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600 }}>
+                Tidak Hadir: {rsvps.filter(r => r.status === 'no').length}
+              </span>
+            </div>
             
-            <div className="guest-table-wrapper" style={{ marginTop: '20px' }}>
+            <div className="guest-table-wrapper" style={{ marginTop: '16px' }}>
               <table className="guest-table" style={{ width: '100%' }}>
                 <thead>
                   <tr>
                     <th>No</th>
-                    <th>Name</th>
-                    <th>Attendance Status</th>
-                    <th>Guests Amount</th>
-                    <th>Submission Date</th>
-                    <th>Actions</th>
+                    <th>Nama</th>
+                    <th>Status</th>
+                    <th>Jml. Tamu</th>
+                    <th>Pesan</th>
+                    <th>Tanggal Daftar</th>
+                    <th>Hapus</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -518,20 +645,36 @@ function Dashboard() {
                       <td style={{ fontWeight: 500, color: '#f8fafc' }}>{guest.name}</td>
                       <td>
                         <span className={`status-badge ${guest.status === 'yes' ? 'attending' : guest.status === 'no' ? 'declined' : 'pending'}`}>
-                          {guest.status.toUpperCase()}
+                          {guest.status === 'yes' ? 'HADIR' : guest.status === 'no' ? 'TIDAK' : 'MUNGKIN'}
                         </span>
                       </td>
-                      <td style={{ color: '#94a3b8' }}>{guest.guests}</td>
-                      <td style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
-                        {new Date(guest.created_at).toLocaleString()}
+                      <td style={{ color: '#94a3b8', textAlign: 'center' }}>{guest.guests}</td>
+                      <td style={{ color: '#94a3b8', fontSize: '0.82rem', maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={guest.message}>
+                        {guest.message || <span style={{ opacity: 0.4 }}>—</span>}
+                      </td>
+                      <td style={{ color: '#94a3b8', fontSize: '0.82rem' }}>
+                        {new Date(guest.created_at).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })}
                       </td>
                       <td>
-                        <button className="action-btn"><MoreVertical size={16} /></button>
+                        <button
+                          onClick={() => setConfirmDialog({ show: true, type: 'single', id: guest.id, name: guest.name })}
+                          title={`Hapus data ${guest.name}`}
+                          style={{
+                            background: 'rgba(239,68,68,0.1)', color: '#ef4444',
+                            border: '1px solid rgba(239,68,68,0.2)', borderRadius: '8px',
+                            padding: '6px 10px', cursor: 'pointer', display: 'flex',
+                            alignItems: 'center', gap: '4px', transition: 'all 0.2s', fontSize: '0.8rem'
+                          }}
+                          onMouseOver={e => e.currentTarget.style.background = 'rgba(239,68,68,0.25)'}
+                          onMouseOut={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+                        >
+                          <Trash2 size={14} />
+                        </button>
                       </td>
                     </tr>
                   ))}
                   {rsvps.length === 0 && (
-                    <tr><td colSpan="6" style={{ textAlign: 'center', opacity: 0.5 }}>No data found in backend.</td></tr>
+                    <tr><td colSpan="7" style={{ textAlign: 'center', opacity: 0.5, padding: '32px' }}>Belum ada data RSVP di database.</td></tr>
                   )}
                 </tbody>
               </table>
@@ -872,6 +1015,73 @@ function Dashboard() {
         }}>
           {toast.message.includes('Gagal') || toast.message.includes('Terjadi') ? <XCircle size={20} /> : <CheckCircle size={20} />}
           <span style={{ fontWeight: 500, fontSize: '0.95rem' }}>{toast.message}</span>
+        </div>
+      )}
+
+      {/* Confirm Delete Dialog */}
+      {confirmDialog.show && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
+          backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', zIndex: 2000, animation: 'fadeIn 0.2s ease'
+        }}
+          onClick={(e) => e.target === e.currentTarget && setConfirmDialog({ show: false, type: null, id: null, name: '' })}
+        >
+          <div style={{
+            background: 'rgba(15, 23, 42, 0.98)', border: '1px solid rgba(239,68,68,0.3)',
+            borderRadius: '20px', padding: '32px', maxWidth: '420px', width: '90%',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.8)', animation: 'fadeInUp 0.3s ease'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '20px' }}>
+              <div style={{ background: 'rgba(239,68,68,0.15)', borderRadius: '12px', padding: '12px', flexShrink: 0 }}>
+                <AlertTriangle size={28} color="#ef4444" />
+              </div>
+              <div>
+                <h3 style={{ color: '#f8fafc', fontWeight: 700, fontSize: '1.1rem', margin: 0 }}>
+                  {confirmDialog.type === 'all' ? 'Hapus Semua Data RSVP?' : 'Hapus Data RSVP?'}
+                </h3>
+                <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: '6px 0 0 0' }}>
+                  {confirmDialog.type === 'all'
+                    ? `Semua ${rsvps.length} data RSVP akan dihapus secara permanen.`
+                    : `Data RSVP dari "${confirmDialog.name}" akan dihapus secara permanen.`
+                  }
+                </p>
+              </div>
+            </div>
+            <div style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '10px', padding: '12px 16px', marginBottom: '24px' }}>
+              <p style={{ color: '#fca5a5', fontSize: '0.85rem', margin: 0, lineHeight: 1.6 }}>
+                ⚠️ Tindakan ini <strong>tidak dapat dibatalkan</strong>. Data yang dihapus tidak bisa dikembalikan.
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setConfirmDialog({ show: false, type: null, id: null, name: '' })}
+                style={{
+                  background: 'rgba(255,255,255,0.05)', color: '#94a3b8',
+                  border: '1px solid rgba(255,255,255,0.1)', padding: '10px 20px',
+                  borderRadius: '10px', cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s'
+                }}
+                onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => confirmDialog.type === 'all' ? deleteAllRsvps() : deleteRsvp(confirmDialog.id)}
+                style={{
+                  background: 'linear-gradient(135deg, #ef4444, #dc2626)', color: 'white',
+                  border: 'none', padding: '10px 24px', borderRadius: '10px',
+                  cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center',
+                  gap: '8px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(239,68,68,0.4)'
+                }}
+                onMouseOver={e => e.currentTarget.style.opacity = '0.85'}
+                onMouseOut={e => e.currentTarget.style.opacity = '1'}
+              >
+                <Trash2 size={16} />
+                {confirmDialog.type === 'all' ? 'Ya, Hapus Semua' : 'Ya, Hapus Data Ini'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
